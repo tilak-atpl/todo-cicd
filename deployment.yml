@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-cicd
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: todo-cicd
+  template:
+    metadata:
+      labels:
+        app: todo-cicd
+    spec:
+      containers:
+      - name: todo-cicd
+        image: tilak717/todo-cicd:1
+        ports:
+        - containerPort: 80  # Update this to match the port exposed in your Dockerfile
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

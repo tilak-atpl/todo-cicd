@@ -6,13 +6,14 @@ function App() {
   const [count, setCount] = useState(0)
 
   const items = [
-    "hello, k8s!!!",
+    "Preparing CICD Pipeline",
+
   ]
 
   return (
     <div>
       <h2>SETTING UP CICD PIPELINE</h2>
-
+      <h3>hello, k8s!!!</h3>
       {
         items.map((item, index)=>
         <p>

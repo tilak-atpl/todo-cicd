@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-cicd-service
+spec:
+  selector:
+    app: todo-cicd
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 80   # Adjust targetPort to match the container's exposed port in Dockerfile
+  type: LoadBalancer

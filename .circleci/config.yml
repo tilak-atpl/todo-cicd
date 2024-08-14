@@ -1,0 +1,42 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: circleci/node:14
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: |
+            docker build -t tilak717/todo-cicd:$CIRCLE_SHA1 .
+            docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
+            docker push tilak717/todo-cicd:$CIRCLE_SHA1
+
+  deploy:
+    machine:
+      enabled: true
+    steps:
+      - run:
+          name: Set Up SSH Key for Deployment
+          command: |
+            echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+            ssh-keyscan -H 43.204.108.175 >> ~/.ssh/known_hosts
+      - run:
+          name: Deploy to Kubernetes
+          command: |
+            ssh ubuntu@43.204.108.175 "
+              docker pull tilak717/todo-cicd:$CIRCLE_SHA1 &&
+              kubectl set image deployment/todo-cicd todo-cicd=tilak717/todo-cicd:$CIRCLE_SHA1
+            "
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build

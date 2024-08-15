@@ -10,8 +10,13 @@ jobs:
       - run:
           name: Build and Push Docker Image
           command: |
+            # Login to Docker Hub
             echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+
+            # Build the Docker image
             docker build -t tilak717/todo-cicd:$CIRCLE_SHA1 .
+
+            # Push the Docker image to Docker Hub
             docker push tilak717/todo-cicd:$CIRCLE_SHA1
 
   deploy:

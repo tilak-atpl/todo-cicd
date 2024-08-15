@@ -54,10 +54,7 @@ jobs:
       - run:
           name: Deploy to Kubernetes on EC2
           command: |
-            ssh -i ~/.ssh/id_rsa ubuntu@$EC2_PUBLIC_IP << 'EOF'
-              kubectl apply -f /home/ubuntu/deployment.yaml
-              kubectl apply -f /home/ubuntu/service.yaml
-            EOF
+            ssh -i ~/.ssh/id_rsa ubuntu@$EC2_PUBLIC_IP 'kubectl apply -f /home/ubuntu/deployment.yaml && kubectl apply -f /home/ubuntu/service.yaml'
 
 workflows:
   version: 2

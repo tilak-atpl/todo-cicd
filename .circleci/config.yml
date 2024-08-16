@@ -41,7 +41,7 @@ jobs:
           version: 20.10.7
       - run:
           name: List workspace files
-          command: ls -la /workspace
+          command: ls -la 
       - run:
           name: Configure kubeconfig
           command: |

@@ -36,14 +36,25 @@ jobs:
       - image: circleci/python:3.8
     steps:
       - attach_workspace:
-          at: /workspace
+          at: /home/circleci/project
       - setup_remote_docker:
           version: 20.10.7
+      - run:
+          name: List files in workspace
+          command: ls -al /home/circleci/project
+      - run:
+          name: Ensure Minikube is started
+          command: |
+            minikube status || minikube start
+      - run:
+          name: Use Minikube context
+          command: kubectl config use-context minikube
       - run:
           name: Update Kubernetes deployment with the new image
           command: |
             kubectl set image deployment/todo-cicd todo-cicd=tilak717/todo-cicd:$CIRCLE_SHA1
             kubectl rollout status deployment/todo-cicd
+
 
 workflows:
   version: 2

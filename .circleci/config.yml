@@ -40,19 +40,6 @@ jobs:
       - setup_remote_docker:
           version: 20.10.7
       - run:
-          name: Install Minikube
-          command: |
-            curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-            chmod +x minikube
-            sudo mv minikube /usr/local/bin/
-      - run:
-          name: Ensure Minikube is started
-          command: |
-            minikube status || minikube start
-      - run:
-          name: Use Minikube context
-          command: kubectl config use-context minikube
-      - run:
           name: Update Kubernetes deployment with the new image
           command: |
             kubectl set image deployment/todo-cicd todo-cicd=tilak717/todo-cicd:$CIRCLE_SHA1

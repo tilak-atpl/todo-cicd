@@ -40,6 +40,13 @@ jobs:
       - setup_remote_docker:
           version: 20.10.7
       - run:
+          name: List workspace files
+          command: ls -la /workspace
+      - run:
+          name: Configure kubeconfig
+          command: |
+            echo $KUBECONFIG_CONTENT > /home/circleci/.kube/config
+      - run:
           name: Update Kubernetes deployment with the new image
           command: |
             kubectl set image deployment/todo-cicd todo-cicd=tilak717/todo-cicd:$CIRCLE_SHA1

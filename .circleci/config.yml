@@ -47,11 +47,14 @@ jobs:
           command: |
             echo $KUBECONFIG_DATA | base64 -d > /home/circleci/.kube/config
       - run:
-          name: Debugging kubeconfig
-          command: cat /home/circleci/.kube/config
-      - run:
           name: List Kubernetes contexts
           command: kubectl config get-contexts
+      - run:
+          name: Create minikube context manually
+          command: |
+            kubectl config set-cluster minikube --server=https://192.168.49.2 --insecure-skip-tls-verify=true
+            kubectl config set-credentials minikube --username=admin --password=admin
+            kubectl config set-context minikube --cluster=minikube --user=minikube --namespace=default
       - run:
           name: Set Kubernetes context
           command: kubectl config use-context minikube

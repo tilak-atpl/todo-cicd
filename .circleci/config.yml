@@ -47,6 +47,9 @@ jobs:
           command: |
             echo $KUBECONFIG_DATA | base64 -d > /home/circleci/.kube/config
       - run:
+          name: Check Kubernetes context
+          command: kubectl config current-context
+      - run:
           name: Update Kubernetes deployment with the new image
           command: |
             kubectl set image deployment/todo-cicd todo-cicd=tilak717/todo-cicd:$CIRCLE_SHA1

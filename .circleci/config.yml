@@ -47,6 +47,12 @@ jobs:
           command: |
             echo $KUBECONFIG_DATA | base64 -d > /home/circleci/.kube/config
       - run:
+          name: Debugging kubeconfig
+          command: cat /home/circleci/.kube/config
+      - run:
+          name: List Kubernetes contexts
+          command: kubectl config get-contexts
+      - run:
           name: Set Kubernetes context
           command: kubectl config use-context minikube
       - run:
@@ -57,10 +63,6 @@ jobs:
           command: |
             kubectl set image deployment/todo-cicd todo-cicd=tilak717/todo-cicd:$CIRCLE_SHA1
             kubectl rollout status deployment/todo-cicd
-
-
-
-
 
 workflows:
   version: 2

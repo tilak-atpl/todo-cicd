@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  build_and_deploy:
+  build:
     docker:
       - image: circleci/node:14
     steps:
@@ -9,64 +9,47 @@ jobs:
       - setup_remote_docker:
           version: 20.10.7
       - run:
-          name: Decode and Save SSH Key
-          command: |
-            echo $ENCODED_SSH_KEY | base64 --decode > ~/.ssh/id_rsa
-            chmod 600 ~/.ssh/id_rsa
-      - run:
           name: Install dependencies
           command: npm install
       - run:
           name: Run tests
           command: npm test
       - run:
-          name: Debug Docker Hub Username
-          command: 'echo "Docker Hub Username: tilak717"'
+          name: Build the project
+          command: npm run build
       - run:
           name: Build Docker image
-          command: docker build -t tilak717/todo-cicd:latest .
+          command: |
+            docker build -t tilak717/todo-cicd:$CIRCLE_SHA1 .
       - run:
           name: Push Docker image to Docker Hub
           command: |
-            echo $DOCKERHUB_PASSWORD | docker login -u tilak717 --password-stdin
-            docker push tilak717/todo-cicd:latest 
+            docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
+            docker push tilak717/todo-cicd:$CIRCLE_SHA1
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  deploy:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - attach_workspace:
+          at: /workspace
+      - setup_remote_docker:
+          version: 20.10.7
       - run:
-          name: Debug SSH Connection
+          name: Update Kubernetes deployment with the new image
           command: |
-            ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST echo "SSH connection successful"
-      - run:
-          name: Stop and Remove Existing Container
-          command: |
-            ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST \
-            "docker ps -q --filter 'name=todoproject' | grep -q . && docker stop todoproject && docker rm todoproject || true"
-      - run:
-          name: Deploy to EC2
-          command: |
-            ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST \
-            "docker pull $DOCKERHUB_USERNAME/todoproject:latest && \
-            docker run -d --name todoproject -p 3000:3000 $DOCKERHUB_USERNAME/todoproject:latest"
-      - run:
-          name: Install kubectl
-          command: |
-            sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl
-            sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
-            echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
-            sudo apt-get update
-            sudo apt-get install -y kubectl
-      - run:
-          name: Apply Kubernetes Configuration
-          command: |
-            scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ./k8s/*.yaml $EC2_USER@$EC2_HOST:/home/ubuntu/k8s/
-            ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST \
-            "kubectl apply -f /home/ubuntu/k8s/"
+            kubectl set image deployment/todo-cicd todo-cicd=tilak717/todo-cicd:$CIRCLE_SHA1
+            kubectl rollout status deployment/todo-cicd
 
 workflows:
   version: 2
   build_and_deploy:
     jobs:
-      - build_and_deploy:
-          filters:
-            branches:
-              only:
-                - main
-                - develop
+      - build
+      - deploy:
+          requires:
+            - build

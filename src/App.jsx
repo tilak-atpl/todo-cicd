@@ -7,7 +7,8 @@ function App() {
 
   const items = [
     "Preparing CICD Pipeline",
-    "just testing on circleci"
+    "just testing on circleci",
+    "testing on aws ec2 instance"
 
   ]
 

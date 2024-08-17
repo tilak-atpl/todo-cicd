@@ -26,34 +26,27 @@ jobs:
           command: |
             docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
             docker push tilak717/todo-cicd:$CIRCLE_SHA1
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .
 
   deploy:
     docker:
-      - image: lachlanevenson/k8s-kubectl:latest
+      - image: circleci/python:3.8
     steps:
-      - attach_workspace:
-          at: /home/circleci/project
-      - setup_remote_docker:
-          version: 20.10.7
+      - checkout
       - run:
-          name: Create .kube directory
-          command: mkdir -p /home/circleci/.kube
-      - run:
-          name: Set up kubectl config
+          name: Install kubectl
           command: |
-            echo $KUBECONFIG_DATA | base64 -d > /home/circleci/.kube/config
+            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+            chmod +x kubectl
+            sudo mv kubectl /usr/local/bin/
       - run:
-          name: Check Kubernetes context
-          command: kubectl config current-context
-      - run:
-          name: Update Kubernetes deployment with the new image
+          name: Copy kubeconfig
           command: |
-            kubectl set image deployment/todo-cicd todo-cicd=tilak717/todo-cicd:$CIRCLE_SHA1
-            kubectl rollout status deployment/todo-cicd
+            scp ubuntu@43.205.144.124:~/.kube/config ~/.kube/config  
+      - run:
+          name: Deploy to Kubernetes
+          command: |
+            kubectl apply -f k8s/deployment.yml
+            kubectl apply -f k8s/service.yml
 
 workflows:
   version: 2

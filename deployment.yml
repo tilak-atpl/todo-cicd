@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: todo-cicd
-        image: tilak717/todo-cicd:1
+        image: tilak717/todo-cicd:$CIRCLE_SHA1
         ports:
         - containerPort: 80  # Update this to match the port exposed in your Dockerfile
         resources:

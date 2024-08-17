@@ -55,9 +55,8 @@ jobs:
           name: Deploy to Kubernetes
           command: |
             aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $CLUSTER_NAME
-            cd /home/circleci/project/k8s  # Navigate to the correct directory
-            kubectl apply -f deployment.yml
-            kubectl apply -f service.yml
+            kubectl apply -f /home/circleci/project/k8s/deployment.yml
+            kubectl apply -f /home/circleci/project/k8s/service.yml
 
 workflows:
   version: 2

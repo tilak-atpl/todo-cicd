@@ -38,6 +38,7 @@ jobs:
   deploy:
     executor: docker-executor
     steps:
+      - checkout  # Make sure this step is present
       - run:
           name: Setup AWS CLI
           command: |
@@ -52,17 +53,17 @@ jobs:
             chmod +x kubectl
             sudo mv kubectl /usr/local/bin/
       - run:
-          name: Debug Current Directory
+          name: Debug Path
           command: |
             echo "Current directory: $(pwd)"
-            echo "Files in current directory:"
+            echo "Files:"
             ls -al
       - run:
           name: Deploy to Kubernetes
           command: |
             aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $CLUSTER_NAME
-            kubectl apply -f deployment.yml
-            kubectl apply -f service.yml
+            kubectl apply -f k8s/deployment.yml
+            kubectl apply -f k8s/service.yml
 
 workflows:
   version: 2

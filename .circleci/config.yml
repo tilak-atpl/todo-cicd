@@ -52,6 +52,12 @@ jobs:
             chmod +x kubectl
             sudo mv kubectl /usr/local/bin/
       - run:
+          name: Debug Current Directory
+          command: |
+            echo "Current directory: $(pwd)"
+            echo "Files in current directory:"
+            ls -al
+      - run:
           name: Deploy to Kubernetes
           command: |
             aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $CLUSTER_NAME

@@ -33,17 +33,28 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install kubectl
+          name: Install kubectl and aws-cli
           command: |
             curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
             chmod +x kubectl
             sudo mv kubectl /usr/local/bin/
+            curl "https://d1uj6qtbmh3dt5.cloudfront.net/awscli-exe-linux-x86_64.zip" -o "awscli-exe-linux-x86_64.zip"
+            unzip awscli-exe-linux-x86_64.zip
+            sudo ./aws/install
+      - run:
+          name: Create .kube directory
+          command: |
+            mkdir -p ~/.kube
+      - run:
+          name: Write kubeconfig
+          command: |
+            echo "$KUBECONFIG" > ~/.kube/config
       - run:
           name: Deploy to Kubernetes
           command: |
-            echo "$KUBECONFIG" > ~/.kube/config
             kubectl apply -f k8s/deployment.yml
             kubectl apply -f k8s/service.yml
+
 
 workflows:
   version: 2

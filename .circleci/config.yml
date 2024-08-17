@@ -39,12 +39,9 @@ jobs:
             chmod +x kubectl
             sudo mv kubectl /usr/local/bin/
       - run:
-          name: Copy kubeconfig
-          command: |
-            scp ubuntu@43.205.144.124:~/.kube/config ~/.kube/config  
-      - run:
           name: Deploy to Kubernetes
           command: |
+            echo "$KUBECONFIG" > ~/.kube/config
             kubectl apply -f k8s/deployment.yml
             kubectl apply -f k8s/service.yml
 
